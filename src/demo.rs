@@ -3373,6 +3373,8 @@ mod tests {
         accessible_frame(&ctx, &mut app, vec![]);
         app.search.focus_requested = true;
         accessible_frame(&ctx, &mut app, vec![]);
+        accessible_frame(&ctx, &mut app, vec![]);
+        assert!(ctx.memory(|memory| memory.has_focus(egui::Id::new("global-search"))));
         let query = app.search.query.clone();
         accessible_frame(
             &ctx,
@@ -3390,6 +3392,9 @@ mod tests {
             app.search.typed_at.is_none(),
             "the link is not searched for"
         );
+        // Text that is not a link still pastes into the field.
+        accessible_frame(&ctx, &mut app, vec![egui::Event::Paste(" live".into())]);
+        assert_eq!(app.search.query, format!("{query} live"));
         app.backend.shutdown();
     }
 

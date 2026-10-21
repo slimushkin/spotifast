@@ -348,6 +348,26 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
             let selected = egui::TextEdit::load_state(ui.ctx(), id)
                 .and_then(|state| state.cursor.char_range())
                 .is_some_and(|range| !range.is_empty());
+            // A Spotify link pasted into the field opens what it names, as
+            // an outside link does. The field never sees it, so it keeps
+            // what it held rather than searching for the address.
+            if ui.memory(|memory| memory.has_focus(id)) {
+                let link = ui.input_mut(|input| {
+                    let link = input.events.iter().find_map(|event| match event {
+                        egui::Event::Paste(text) => crate::link::parse(text),
+                        _ => None,
+                    });
+                    if link.is_some() {
+                        input
+                            .events
+                            .retain(|event| !matches!(event, egui::Event::Paste(_)));
+                    }
+                    link
+                });
+                if let Some(uri) = link {
+                    app.actions.push(Action::OpenLink(uri));
+                }
+            }
             let response = super::widgets::search_field(
                 ui,
                 &palette,
@@ -357,15 +377,6 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                 &gettext(locale, "What do you want to play?"),
                 search_width,
             );
-            // A pasted Spotify link opens what it names, as an outside link
-            // does, and the field keeps what it held rather than searching
-            // for the address.
-            if app.search.query != before
-                && let Some(uri) = crate::link::parse(&app.search.query)
-            {
-                app.search.query = before.clone();
-                app.actions.push(Action::OpenLink(uri));
-            }
             if app.search.focus_requested {
                 app.search.focus_requested = false;
                 response.request_focus();
