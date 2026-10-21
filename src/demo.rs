@@ -3364,6 +3364,35 @@ mod tests {
         app.backend.shutdown();
     }
 
+    /// Pasting a Spotify link into the global search opens what it names,
+    /// and the field keeps the query it held.
+    #[test]
+    fn pasting_a_spotify_link_into_the_global_search_opens_it() {
+        let (ctx, mut app) = accessible_app("global-search-link");
+        app.open(Page::Home);
+        accessible_frame(&ctx, &mut app, vec![]);
+        app.search.focus_requested = true;
+        accessible_frame(&ctx, &mut app, vec![]);
+        let query = app.search.query.clone();
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![egui::Event::Paste(
+                "https://open.spotify.com/album/alb0?si=shared".into(),
+            )],
+        );
+        for _ in 0..3 {
+            accessible_frame(&ctx, &mut app, vec![]);
+        }
+        assert_eq!(*app.page(), Page::Album("alb0".into()));
+        assert_eq!(app.search.query, query);
+        assert!(
+            app.search.typed_at.is_none(),
+            "the link is not searched for"
+        );
+        app.backend.shutdown();
+    }
+
     #[test]
     fn settings_search_filters_rows_clearing_and_empty_state() {
         use egui::accesskit::{Action as AccessibleAction, Role};

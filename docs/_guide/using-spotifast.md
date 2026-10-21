@@ -212,6 +212,13 @@ A song picked from the search results plays on its own, and, with Autoplay on,
 Spotify continues with songs it suggests after it, as in the Spotify apps. The other results are
 not queued after it.
 
+## Pasting a Spotify link into search
+
+Paste a `spotify:` URI or an `open.spotify.com` address into the search box to
+open what it links to instead of searching for it, as when the link comes from
+outside the app. A song or an episode opens its album or podcast. The search
+box keeps what it held before.
+
 ## Search from a launcher
 
 **In development, not included in 0.8.0:** a Spotify search link opens Search

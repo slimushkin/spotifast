@@ -357,6 +357,15 @@ pub fn show(app: &mut App, ui: &mut egui::Ui) {
                 &gettext(locale, "What do you want to play?"),
                 search_width,
             );
+            // A pasted Spotify link opens what it names, as an outside link
+            // does, and the field keeps what it held rather than searching
+            // for the address.
+            if app.search.query != before
+                && let Some(uri) = crate::link::parse(&app.search.query)
+            {
+                app.search.query = before.clone();
+                app.actions.push(Action::OpenLink(uri));
+            }
             if app.search.focus_requested {
                 app.search.focus_requested = false;
                 response.request_focus();
